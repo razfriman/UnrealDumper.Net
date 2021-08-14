@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnrealDumper", "UnrealDumper\UnrealDumper.csproj", "{62352C41-E2C8-49CA-BD7D-1DF6B9BFEFC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnrealDumper.Console", "UnrealDumper.Console\UnrealDumper.Console.csproj", "{74CB4E75-06AB-4387-812C-9E70ADCEB95D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62352C41-E2C8-49CA-BD7D-1DF6B9BFEFC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62352C41-E2C8-49CA-BD7D-1DF6B9BFEFC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62352C41-E2C8-49CA-BD7D-1DF6B9BFEFC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62352C41-E2C8-49CA-BD7D-1DF6B9BFEFC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74CB4E75-06AB-4387-812C-9E70ADCEB95D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74CB4E75-06AB-4387-812C-9E70ADCEB95D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74CB4E75-06AB-4387-812C-9E70ADCEB95D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74CB4E75-06AB-4387-812C-9E70ADCEB95D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
