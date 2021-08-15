@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnrealDumper.Net.Models.Unreal;
 using UnrealDumper.Net.Models.Windows;
 
@@ -14,7 +15,7 @@ namespace UnrealDumper.Net
         private ProcessReader _processReader;
         private MemoryReader _reader;
         private readonly DumperSettings _settings;
-        
+
         public int? NamesIndex { get; set; }
         public long[] Blocks { get; set; }
         public int? ObjectsIndex { get; set; }
@@ -26,15 +27,39 @@ namespace UnrealDumper.Net
             FindProcess();
             _processReader = new ProcessReader(_process, _settings);
             _reader = GetModuleReader();
+            //DumpStringDecryption();
             ResolveIndexes();
             DumpNames();
-            DumpObjects();
+            //DumpObjects();
         }
 
         public void FindProcess()
         {
             Console.WriteLine($"Find Process: [{_settings.ProcessName}]");
             _process = Process.GetProcessesByName(_settings.ProcessName).FirstOrDefault();
+        }
+
+        private void DumpStringDecryption()
+        {
+            Console.WriteLine("Resolve Name/Object Index");
+            var codeSections = GetCodeSections();
+            foreach (var codeSection in codeSections)
+            {
+                var start = (int)codeSection.PointerToRawData;
+                var end = (int)(start + codeSection.SizeOfRawData);
+                var decryptAnsiAddr = _reader.FindPointer(new byte[]
+                {
+                    0xE8, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xB7, 0x1B, 0xC1, 0xEB, 0x06, 0x4C, 0x89, 0x36, 0x4C, 0x89,
+                    0x76, 0x08, 0x85, 0xDB, 0x74, 0x48
+                }, start, end);
+                if (decryptAnsiAddr.HasValue)
+                {
+                    var n = 200;
+                    _reader.Seek(decryptAnsiAddr.Value +  0x2A, SeekOrigin.Begin);
+                    var bytes = _reader.ReadBytes(n);
+                    Console.WriteLine(BitConverter.ToString(bytes));
+                }
+            }
         }
 
         private void ResolveIndexes()
@@ -60,17 +85,20 @@ namespace UnrealDumper.Net
             var numElements = _reader.ReadInt32();
             var maxChunks = _reader.ReadInt32();
             var numChunks = _reader.ReadInt32();
-           
-            for (uint i = 0; i < numElements; i++) {
+
+            for (uint i = 0; i < numElements; i++)
+            {
                 var obj = GetObjectPtr(i);
                 if (obj is null or 0)
                 {
                     continue;
                 }
+
                 Console.WriteLine($"Found Object Pointer [{obj}]");
             }
-            
-            long? GetObjectPtr(uint id) {
+
+            long? GetObjectPtr(uint id)
+            {
                 if (id >= numElements) return null;
                 long chunkIndex = id / 65536;
                 if (chunkIndex >= numChunks) return null;
@@ -81,9 +109,10 @@ namespace UnrealDumper.Net
                 return item;
             }
         }
-        
-        private void DumpNames()
+
+        private List<string> DumpNames()
         {
+            var result = new List<string>();
             Console.WriteLine($"Dumping Names at [{NamesIndex}]");
             _reader.Seek(NamesIndex.Value, SeekOrigin.Begin);
             var _ = _reader.ReadInt64();
@@ -92,13 +121,18 @@ namespace UnrealDumper.Net
             Blocks = _reader.ReadArray(8192, r => r.ReadInt64());
             for (uint blockId = 0; blockId < currentBlock; blockId++)
             {
-                DumpNameBlock(blockId, _settings.StructOffsets.Stride * 65536);
+                result.AddRange(DumpNameBlock(blockId, _settings.StructOffsets.Stride * 65536));
             }
-            DumpNameBlock(currentBlock, currentByteCursor);
+
+            result.AddRange(DumpNameBlock(currentBlock, currentByteCursor));
+            Console.WriteLine($"Names Found: [{result.Count}]");
+            File.WriteAllLines("Names.txt", result);
+            return result;
         }
 
-        private void DumpNameBlock(uint blockId, int blockSize)
+        private List<string> DumpNameBlock(uint blockId, int blockSize)
         {
+            var result = new List<string>();
             var blockStart = Blocks[blockId];
             var blockEnd = blockStart + (uint)blockSize;
             var position = blockStart;
@@ -112,15 +146,21 @@ namespace UnrealDumper.Net
             {
                 var entry = new UeFNameEntry(_processReader, position);
                 var (wide, len) = entry.Info();
-                if (len > 0) {
+                if (len > 0)
+                {
                     var s = entry.String(wide, len);
+                    result.Add(s);
                     var size = entry.Size(wide, len);
                     entryHandle.Offset += (uint)(size / _settings.StructOffsets.Stride);
                     position += size;
-                } else {
+                }
+                else
+                {
                     break;
-                };
+                }
             }
+
+            return result;
         }
 
         private List<IMAGE_SECTION_HEADER> GetCodeSections()

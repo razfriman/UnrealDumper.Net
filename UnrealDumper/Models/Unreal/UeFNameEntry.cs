@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 namespace UnrealDumper.Net.Models.Unreal
@@ -48,10 +49,43 @@ namespace UnrealDumper.Net.Models.Unreal
             {
                 var reader = Reader.GetMemoryReader(Address + Reader.Settings.StructOffsets.FNameEntry.HeaderSize, len);
                 var bytes = reader.ReadBytes(len);
-                // TODO(raz): Decrypt Fortnite strings
-                // Decrypt_ANSI(buf, len);
+                Decrypt(bytes, 22976);
                 return Encoding.ASCII.GetString(bytes);
             }
+        }
+        
+        public static void Decrypt(byte[] buffer, uint key)
+        {
+            var currentCipherValue = (key >> 8) | (key << 8);
+            uint keyBump = (key >> 3) & (0x00_00_00_00_FF_FF_FF_FF);
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                currentCipherValue += keyBump;
+                buffer[i] = (byte)(buffer[i] ^ ((byte)(currentCipherValue & 0x00_00_00_FF)));
+            }
+        }
+
+        public static byte[] DecryptRaw(byte[] enc, uint key)
+        {
+            var len = enc.Length;
+            var result = new byte[len];
+        
+            uint eax = key;
+            uint ecx = eax;
+            uint edx = eax;
+            edx >>= 8;
+            ecx <<= 8;
+            edx |= ecx;
+            ulong r8 = eax;
+            r8 >>= 3;
+        
+            for (int i = 0; i < len; i++)
+            {
+                edx += (uint)(r8 & 0x00_00_00_00_FF_FF_FF_FF);
+                result[i] = (byte)(enc[i] ^ ((byte)(edx & 0x00_00_00_FF)));
+            }
+        
+            return result;
         }
     }
 }
