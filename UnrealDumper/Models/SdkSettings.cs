@@ -1,4 +1,6 @@
-namespace UnrealDumper.Net.Models.Offsets
+using UnrealDumper.Net.Models.Offsets;
+
+namespace UnrealDumper.Net.Models
 {
     public class SdkSettings
     {
@@ -70,15 +72,29 @@ namespace UnrealDumper.Net.Models.Offsets
                 Size = 0
             }
         };
+
+        public static readonly string FortniteProcessName = "FortniteClient-Win64-Shipping";
+
+        public static readonly byte[] FortniteNamesSignature = { 0x4C, 0x8D, 0x35, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x10, 0x07, 0x83, 0xFB, 0x01 };
+
+        public static readonly byte[] FortniteObjectsSignature = { 0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x0C, 0xC8, 0x48, 0x8D, 0x04, 0xD1, 0xEB };
         
-        public static readonly DumperSettings FortniteSettings = new()
+        public static readonly DumperSettings FortniteSettings_1730 = new()
         {
-            ProcessName = "FortniteClient-Win64-Shipping",
-            NamesSignature = new byte[]
-                { 0x4C, 0x8D, 0x35, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x10, 0x07, 0x83, 0xFB, 0x01 },
-            ObjectsSignature = new byte[]
-                { 0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x0C, 0xC8, 0x48, 0x8D, 0x04, 0xD1, 0xEB },
+            ProcessName = FortniteProcessName,
+            NamesSignature = FortniteNamesSignature,
+            ObjectsSignature = FortniteObjectsSignature,
             StructOffsets = DefaultStructOffsets,
+            DecryptString = (buffer) => EncryptionSettings.Decrypt1730(buffer, 22976)
+        };
+        
+        public static readonly DumperSettings FortniteSettings_1740 = new()
+        {
+            ProcessName = FortniteProcessName,
+            NamesSignature = FortniteNamesSignature,
+            ObjectsSignature = FortniteObjectsSignature,
+            StructOffsets = DefaultStructOffsets,
+            DecryptString = (buffer) => EncryptionSettings.Decrypt1740(buffer, 120)
         };
     }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UnrealDumper.Net.Models;
 using UnrealDumper.Net.Models.Unreal;
 using UnrealDumper.Net.Models.Windows;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using UnrealDumper.Net.Models;
 
 namespace UnrealDumper.Net
 {
