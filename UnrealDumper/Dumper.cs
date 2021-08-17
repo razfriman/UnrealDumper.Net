@@ -27,9 +27,9 @@ namespace UnrealDumper.Net
             FindProcess();
             _processReader = new ProcessReader(_process, _settings);
             _reader = GetModuleReader();
-            //DumpStringDecryption();
+            DumpStringDecryption();
             ResolveIndexes();
-            DumpNames();
+            //DumpNames();
             //DumpObjects();
         }
 
